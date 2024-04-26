@@ -9,7 +9,8 @@ final class InfotechWallet {
     public function __construct() {
 
 		if ( Infotech_Wallet_Dependencies::is_woocommerce_active() ) {
-			$this->includes();
+			
+            $this->includes();
 			$this->init_hooks();
 			do_action( 'woo_wallet_loaded' );
 
@@ -56,13 +57,28 @@ final class InfotechWallet {
 		}
 
         // Public
-        require_once INFOTECH_WALLET_ABSPATH . 'includes/public/payment-gateways/credit-method.php';
+        # require_once INFOTECH_WALLET_ABSPATH . 'includes/public/payment-gateways/credit-method.php';
+        # require_once INFOTECH_WALLET_ABSPATH . 'includes/public/class-infotech-credit-payment.php';
         require_once INFOTECH_WALLET_ABSPATH . 'includes/public/shortcodes.php';
 
         // Helpers
         require_once INFOTECH_WALLET_ABSPATH . 'includes/helpers/roles.php';
         require_once INFOTECH_WALLET_ABSPATH . 'includes/helpers/database-actions.php';
     }
+
+    private function init_hooks() {
+        add_action( 'init', array( $this, 'init' ), 5 );
+    }
+
+    public function init() {
+		include_once INFOTECH_WALLET_ABSPATH . 'includes/class-infotech-credit-payment.php';
+        add_filter( 'woocommerce_payment_gateways', array( $this, 'load_gateway' ) );
+    }
+
+    public function load_gateway( $load_gateways ) {
+		$load_gateways[] = 'Infotech_Gateway_Credit_payment';
+		return $load_gateways;
+	}
 
     public function plugin_url() {
 		return untrailingslashit( plugins_url( '/', INFOTECH_WALLET_PLUGIN_FILE ) );
@@ -139,6 +155,5 @@ final class InfotechWallet {
 			</p>
 		</div>
 		<?php
-	}
-
+	}    
 }
