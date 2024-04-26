@@ -1,44 +1,15 @@
 <?php
 /*
-Plugin name: Infotech Plugin
-Description: Este plugin añade el metodo de pago con credito directo a Infotech.
-Version: 0.0.1
+Plugin name: Infotech Plugin V2
+Description: Plugin requerido para funcionalidades externas de Infotech Online
+Version: 0.1.1
 Author: Juan Gallego
 */
-
-// Get WooCommerce functions ( Production )
-
-if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
-    require_once('srv/htdocs/wp-content/plugins/woocommerce/woocommerce.php');
-}
-
-// Libraries
-
-// Public
-require_once plugin_dir_path(__FILE__) . 'includes/public/payment-gateways/credit-method.php';
-require_once plugin_dir_path(__FILE__) . 'includes/public/shortcodes.php';
-require_once plugin_dir_path(__FILE__) . 'includes/public/quotations/quote-button.php';
-
-// Helpers
-require_once plugin_dir_path(__FILE__) . 'includes/helpers/roles.php';
-require_once plugin_dir_path(__FILE__) . 'includes/helpers/database-actions.php';
-
-// Actions to activate plugin
-register_activation_hook( __FILE__, 'activation_function' );
 
 function activation_function() {
     // Create the quote tables
     create_quote_tables();
 }
-
-// Actions to deactivate plugin
-register_deactivation_hook( __FILE__, 'deactivation_function' );
-
-function deactivation_function() {
-    
-}
-
-add_action("admin_menu", "InfotechPayment");
 
 // Hook to save the new payment method
 add_filter('woocommerce_payment_gateways', 'agregar_metodo_pago_personalizado');
@@ -48,29 +19,43 @@ function agregar_metodo_pago_personalizado($gateways) {
     return $gateways;
 }
 
-function InfotechPayment() {
-    add_menu_page(
-        "Infotech Payment",
-        "Infotech Payment",
-        "manage_options",
-        plugin_dir_path(__FILE__).'includes/public/pages/credit-payment.php',
-        null
-    );
-    
-    add_submenu_page(
-        plugin_dir_path(__FILE__).'includes/public/pages/credit-payment.php',
-        "Pagos por Convenio",
-        "Pagos por Convenio",
-        "manage_options",
-        plugin_dir_path(__FILE__).'includes/public/pages/convenio-payment.php'
-    );
-
-    add_submenu_page(
-        plugin_dir_path(__FILE__).'includes/public/pages/credit-payment.php',
-        "Cotizaciones",
-        "Cotizaciones",
-        "manage_options",
-        plugin_dir_path(__FILE__).'includes/public/pages/quotes.php'
-    );
-
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
+
+// Define WOO_WALLET_PLUGIN_FILE.
+if ( ! defined( 'INFOTECH_WALLET_PLUGIN_FILE' ) ) {
+	define( 'INFOTECH_WALLET_PLUGIN_FILE', __FILE__ );
+}
+
+// Define WOO_WALLET_ABSPATH.
+if ( ! defined( 'INFOTECH_WALLET_ABSPATH' ) ) {
+	define( 'INFOTECH_WALLET_ABSPATH', dirname( INFOTECH_WALLET_PLUGIN_FILE ) . '/' );
+}
+
+// Define WOO_WALLET_PLUGIN_VERSION.
+if ( ! defined( 'INFOTECH_WALLET_PLUGIN_VERSION' ) ) {
+	define( 'INFOTECH_WALLET_PLUGIN_VERSION', '1.1.0' );
+}
+
+// include dependencies file.
+if ( ! class_exists( 'infotech_Wallet_Dependencies' ) ) {
+	include_once __DIR__ . '/includes/class-infotech-wallet-dependencies.php';
+}
+
+// Include the main class.
+if ( ! class_exists( 'InfotechWallet' ) ) {
+	include_once __DIR__ . '/includes/class-infotech-wallet.php';
+}
+
+/**
+ * Returns the main instance of InfotechWallet.
+ *
+ * @since  1.1.0
+ * @return InfotechWallet
+ */
+function infotech_wallet() {
+	return InfotechWallet::instance();
+}
+
+$GLOBALS['infotech_wallet'] = infotech_wallet();

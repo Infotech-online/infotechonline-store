@@ -58,8 +58,8 @@
                         $total_price = $item["total_price"];
                         $product_sku = $item["product_sku"];
 			
-			$unit_price = number_format($unit_price, 0, ',', '.');
-			$total_price = number_format($total_price, 0, ',', '.');
+                        $unit_price = number_format($unit_price, 0, ',', '.');
+                        $total_price = number_format($total_price, 0, ',', '.');
 
                         $quote_details .= "<tr class='details-row'><td>$product_sku</td><td>$product_name</td><td>$product_qty</td><td>$$unit_price</td><td>$$total_price</td></tr>";
                     }
