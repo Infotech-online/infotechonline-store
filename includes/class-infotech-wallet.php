@@ -8,7 +8,7 @@ final class InfotechWallet {
 
     public function __construct() {
 
-		if ( Woo_Wallet_Dependencies::is_woocommerce_active() ) {
+		if ( Infotech_Wallet_Dependencies::is_woocommerce_active() ) {
 			$this->includes();
 			$this->init_hooks();
 			do_action( 'woo_wallet_loaded' );
