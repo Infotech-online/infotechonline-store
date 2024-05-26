@@ -8,11 +8,11 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
-if ( ! class_exists( 'Woo_Wallet_Dependencies' ) ) {
+if ( ! class_exists( 'Infotech_Plugin_Dependencies' ) ) {
 	/**
 	 * Wallet dependency class.
 	 */
-	class Infotech_Wallet_Dependencies {
+	class Infotech_Plugin_Dependencies {
 		/**
 		 * Active plugins veriable
 		 *
@@ -57,11 +57,11 @@ if ( ! class_exists( 'Woo_Wallet_Dependencies' ) ) {
 		 *
 		 * @return Boolean
 		 */
-		public static function woo_wallet_active_check() {
+		public static function infotech_plugin_active_check() {
 			if ( ! self::$active_plugins ) {
 				self::init();
 			}
-			return in_array( 'woo-wallet/woo-wallet.php', self::$active_plugins, true ) || array_key_exists( 'woo-wallet/woo-wallet.php', self::$active_plugins );
+			return in_array( 'infotech-payment-plugin/infotech-plugin.php', self::$active_plugins, true ) || array_key_exists( 'infotech-payment-plugin/infotech-plugin.php', self::$active_plugins );
 		}
 
 		/**
@@ -69,8 +69,8 @@ if ( ! class_exists( 'Woo_Wallet_Dependencies' ) ) {
 		 *
 		 * @return Boolean
 		 */
-		public static function is_woo_wallet_active() {
-			return self::woo_wallet_active_check();
+		public static function is_infotech_plugin_active() {
+			return self::infotech_plugin_active_check();
 		}
 
 	}

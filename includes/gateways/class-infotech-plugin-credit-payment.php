@@ -4,16 +4,16 @@
 add_action('woocommerce_payment_gateways', 'add_custom_payment_method');
 
 function add_custom_payment_method($gateways) {
-    $gateways[] = 'WC_InfotechCreditPayment';
+    $gateways[] = 'WC_Infotech_Credit_Payment';
     return $gateways;
 }
 
-class WC_InfotechCreditPayment extends WC_Payment_Gateway {
+class WC_Infotech_Credit_Payment extends WC_Payment_Gateway {
 
     // Constructor
     public function __construct() {
         $this->id = 'infotech_credit_payment'; // Identifier of the payment
-        $this->method_title = 'Crédito directo con Infotech'; // Only visible for the user
+        $this->method_title = 'Crédito directo con Infotech'; // Only visible for the user_
         $this->title = 'Crédito directo o Convenio'; // Only visible for the checkout
         $this->has_fields = true;
         $this->init_form_fields();
@@ -25,6 +25,9 @@ class WC_InfotechCreditPayment extends WC_Payment_Gateway {
         
         // Save the configurations of the method
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+        add_action('woocommerce_checkout_process', 'validate_custom_fields');
+        add_action('woocommerce_admin_order_data_after_shipping_address', 'mostrar_texto_descriptivo_shipping', 10, 1);
+        add_action('woocommerce_thankyou', 'verify_payment_method');
     }
 
     // Configuration of the credit 
@@ -178,61 +181,58 @@ class WC_InfotechCreditPayment extends WC_Payment_Gateway {
             'redirect' => $this->get_return_url($order),
         );
     }
-}
 
-// Validate the custom fields
-add_action('woocommerce_checkout_process', 'validate_custom_fields');
-function validate_custom_fields() {
-    if ($_POST['payment_method'] === 'infotech_credit_payment') {
+    // Validate the custom fields
 
-        if (empty($_POST['company_name'])) {
-            wc_add_notice(__('Por favor, completa el campo de nombre de la empresa o fondo de empleados.', 'text-domain'), 'error');
-        }
+    function validate_custom_fields() {
+        if ($_POST['payment_method'] === 'infotech_credit_payment') {
 
-        if (empty($_POST['company_identification'])) {
-            wc_add_notice(__('Por favor, completa el campo de identificación de la empresa', 'text-domain'), 'error');
-        }
+            if (empty($_POST['company_name'])) {
+                wc_add_notice(__('Por favor, completa el campo de nombre de la empresa o fondo de empleados.', 'text-domain'), 'error');
+            }
 
-        if (empty($_POST['employee_name'])) {
-            wc_add_notice(__('Por favor, completa el campo de nombre del empleado.', 'text-domain'), 'error');
-        }
+            if (empty($_POST['company_identification'])) {
+                wc_add_notice(__('Por favor, completa el campo de identificación de la empresa', 'text-domain'), 'error');
+            }
 
-        if (empty($_POST['employee_position'])) {
-            wc_add_notice(__('Por favor, completa el campo de posición laboral.', 'text-domain'), 'error');
-        }
+            if (empty($_POST['employee_name'])) {
+                wc_add_notice(__('Por favor, completa el campo de nombre del empleado.', 'text-domain'), 'error');
+            }
 
-        if (empty($_POST['order_type'])) {
-            wc_add_notice(__('Por favor, completa el campo de tipo de pedido.', 'text-domain'), 'error');
+            if (empty($_POST['employee_position'])) {
+                wc_add_notice(__('Por favor, completa el campo de posición laboral.', 'text-domain'), 'error');
+            }
+
+            if (empty($_POST['order_type'])) {
+                wc_add_notice(__('Por favor, completa el campo de tipo de pedido.', 'text-domain'), 'error');
+            }
         }
     }
-}
 
-// Add custom fields to the orders with the "infotech_payment_method"
-function mostrar_texto_descriptivo_shipping($order) {
+    // Add custom fields to the orders with the "infotech_payment_method"
+    function mostrar_texto_descriptivo_shipping($order) {
 
-    $order_id = $order->get_id();
-    $company_name = get_post_meta($order_id, '_company_name', true);
-    $company_identification = get_post_meta($order_id, '_company_identification', true);
-    $employee_name = get_post_meta($order_id, '_employee_name', true);
-    $employee_position = get_post_meta($order_id, '_employee_position', true);
-    $order_type = get_post_meta($order_id, '_order_type', true);
+        $order_id = $order->get_id();
+        $company_name = get_post_meta($order_id, '_company_name', true);
+        $company_identification = get_post_meta($order_id, '_company_identification', true);
+        $employee_name = get_post_meta($order_id, '_employee_name', true);
+        $employee_position = get_post_meta($order_id, '_employee_position', true);
+        $order_type = get_post_meta($order_id, '_order_type', true);
 
-    echo '<div class="form-field form-field-wide">';
-    echo "<p><strong>Nombre de la compañía o fondo de empleados:</strong><br>$company_name</p>";
-    echo "<p><strong>Identificación de la empresa (NIT):</strong><br>$company_identification</p>";
-    echo "<p><strong>Nombre del empleado:</strong><br>$employee_name</p>";
-    echo "<p><strong>Posición laboral:</strong><br>$employee_position</p>";
-    echo "<p><strong>Tipo de pedido:</strong><br>$order_type</p>";
-    echo '</div>';
-}
+        echo '<div class="form-field form-field-wide">';
+        echo "<p><strong>Nombre de la compañía o fondo de empleados:</strong><br>$company_name</p>";
+        echo "<p><strong>Identificación de la empresa (NIT):</strong><br>$company_identification</p>";
+        echo "<p><strong>Nombre del empleado:</strong><br>$employee_name</p>";
+        echo "<p><strong>Posición laboral:</strong><br>$employee_position</p>";
+        echo "<p><strong>Tipo de pedido:</strong><br>$order_type</p>";
+        echo '</div>';
+    }
+    function verify_payment_method($order_id) {
+        // Obtiene el método de pago utilizado en la orden
+        $order = wc_get_order($order_id);
 
-add_action('woocommerce_admin_order_data_after_shipping_address', 'mostrar_texto_descriptivo_shipping', 10, 1);
+        // Mostrar texto después de la dirección de envío en la página de edición de órdenes en el backend
+        do_action('woocommerce_admin_order_data_after_shipping_address', $order);
+    }
 
-add_action('woocommerce_thankyou', 'verify_payment_method');
-function verify_payment_method($order_id) {
-    // Obtiene el método de pago utilizado en la orden
-    $order = wc_get_order($order_id);
-
-    // Mostrar texto después de la dirección de envío en la página de edición de órdenes en el backend
-    do_action('woocommerce_admin_order_data_after_shipping_address', $order);
 }
